@@ -9,6 +9,7 @@ public class PlayerAttack : MonoBehaviour
     public LayerMask enemyLayer;
 
     private Animator animator;
+    private bool isAttacking = false;
 
     private void Start()
     {
@@ -17,7 +18,8 @@ public class PlayerAttack : MonoBehaviour
 
     private void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame || Input.GetMouseButtonDown(0))
+        // Evita que el jugador pueda atacar mientras la animación anterior no termina
+        if ((Mouse.current.leftButton.wasPressedThisFrame || Input.GetMouseButtonDown(0)) && !isAttacking)
         {
             Attack();
         }
@@ -25,10 +27,10 @@ public class PlayerAttack : MonoBehaviour
 
     private void Attack()
     {
-        // reproducir animación
         if (animator != null)
         {
-            animator.SetTrigger("Attack"); 
+            isAttacking = true;
+            animator.SetTrigger("Attack");
         }
 
         Collider[] hitEnemies = Physics.OverlapSphere(transform.position, attackRadius, enemyLayer);
@@ -42,6 +44,14 @@ public class PlayerAttack : MonoBehaviour
                 Debug.Log($"Golpeaste a {enemy.name} causando {damage} de daño.");
             }
         }
+
+        // Espera el fin de la animación antes de permitir otro ataque
+        Invoke(nameof(ResetAttack), 0.8f); // Ajusta 0.8f al tiempo real de tu animación
+    }
+
+    private void ResetAttack()
+    {
+        isAttacking = false;
     }
 
     private void OnDrawGizmosSelected()

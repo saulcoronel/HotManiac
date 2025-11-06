@@ -29,7 +29,7 @@ public class EnemyMovementAndAttack : MonoBehaviour
             player = playerObj.transform;
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         if (player == null) return;
 
@@ -37,39 +37,53 @@ public class EnemyMovementAndAttack : MonoBehaviour
         direction.y = 0f;
         float distance = direction.magnitude;
 
+        // --- Movimiento hacia el jugador ---
         if (distance <= detectionRadius && distance > attackRange)
         {
-            Vector3 moveVelocity = direction.normalized * moveSpeed;
-            rb.MovePosition(rb.position + moveVelocity * Time.fixedDeltaTime);
-
-            if (moveVelocity != Vector3.zero)
-                transform.forward = moveVelocity.normalized;
-
-            float DirX = transform.InverseTransformDirection(moveVelocity).x;
-            float DirY = transform.InverseTransformDirection(moveVelocity).z;
-
-            animator.SetFloat("DirX", DirX);
-            animator.SetFloat("DirY", DirY);
+            MoveTowardsPlayer(direction);
         }
         else
         {
-            animator.SetFloat("DirX", 0f);
-            animator.SetFloat("DirY", 0f);
+            StopMoving();
         }
 
+        // --- Ataque ---
         if (distance <= attackRange && Time.time >= nextAttackTime)
         {
-            animator.SetTrigger("Attack");
-
-            Health playerHealth = player.GetComponent<Health>();
-            if (playerHealth != null)
-            {
-                playerHealth.TakeDamage(damage);
-                Debug.Log($"[ENEMY ATTACK] {gameObject.name} atacó al Player causando {damage} de daño. Vida del Player: {playerHealth.currentHealth}");
-            }
-
-            nextAttackTime = Time.time + 1f / attackRate;
+            Attack();
         }
+    }
+
+    private void MoveTowardsPlayer(Vector3 direction)
+    {
+        Vector3 moveVelocity = direction.normalized * moveSpeed;
+        rb.MovePosition(rb.position + moveVelocity * Time.deltaTime);
+
+        transform.forward = direction.normalized;
+
+        // Actualizar Blend Tree del enemigo
+        animator.SetFloat("DirX", 0f);
+        animator.SetFloat("DirY", 1f); // 1 = avanzando al frente
+    }
+
+    private void StopMoving()
+    {
+        animator.SetFloat("DirX", 0f);
+        animator.SetFloat("DirY", 0f);
+    }
+
+    private void Attack()
+    {
+        animator.SetTrigger("Attack");
+
+        Health playerHealth = player.GetComponent<Health>();
+        if (playerHealth != null)
+        {
+            playerHealth.TakeDamage(damage);
+            Debug.Log($"[ENEMY ATTACK] {gameObject.name} atacó al Player causando {damage} de daño.");
+        }
+
+        nextAttackTime = Time.time + 1f / attackRate;
     }
 
     private void OnDrawGizmosSelected()

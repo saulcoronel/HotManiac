@@ -4,9 +4,10 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movimiento")]
-    public float moveSpeed = 5f;
-    public float acceleration = 8f; // que tan rápido acelera
-    public float rotationSpeed = 10f; // que tan rápido gira
+    public float walkSpeed = 5f;
+    public float runSpeed = 9f;
+    public float acceleration = 8f;
+    public float rotationSpeed = 10f;
 
     private Rigidbody rb;
     private Vector3 moveInput;
@@ -17,22 +18,26 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
-
         animator = GetComponent<Animator>();
     }
 
     private void Update()
     {
-        // Captura input (WASD o flechas)
         float moveX = Input.GetAxisRaw("Horizontal");
         float moveZ = Input.GetAxisRaw("Vertical");
 
         moveInput = new Vector3(moveX, 0f, moveZ).normalized;
 
+        // Detectar si está corriendo
+        bool isRunning = Input.GetKey(KeyCode.LeftShift);
+
         // Actualizar Blend Tree
         animator.SetFloat("DirX", moveX);
         animator.SetFloat("DirY", moveZ);
 
+        // Controlar parámetro Speed (para Blend Tree)
+        float targetSpeed = moveInput.magnitude * (isRunning ? runSpeed : walkSpeed);
+        animator.SetFloat("Speed", targetSpeed);
 
         // Rotar suavemente hacia la dirección de movimiento
         if (moveInput != Vector3.zero)
@@ -44,8 +49,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Vector3 targetVelocity = moveInput * moveSpeed;
-   
+        // Calcular velocidad dependiendo de si corre o camina
+        bool isRunning = Input.GetKey(KeyCode.LeftShift);
+        float speed = isRunning ? runSpeed : walkSpeed;
+
+        Vector3 targetVelocity = moveInput * speed;
         currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);
 
         rb.MovePosition(rb.position + currentVelocity * Time.fixedDeltaTime);
