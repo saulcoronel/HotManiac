@@ -15,11 +15,14 @@ public class EnemyMovementAndAttack : MonoBehaviour
 
     private Rigidbody rb;
     private Transform player;
+    private Animator animator;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+
+        animator = GetComponent<Animator>();
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
@@ -32,7 +35,6 @@ public class EnemyMovementAndAttack : MonoBehaviour
 
         Vector3 direction = player.position - transform.position;
         direction.y = 0f;
-
         float distance = direction.magnitude;
 
         if (distance <= detectionRadius && distance > attackRange)
@@ -42,16 +44,30 @@ public class EnemyMovementAndAttack : MonoBehaviour
 
             if (moveVelocity != Vector3.zero)
                 transform.forward = moveVelocity.normalized;
+
+            float DirX = transform.InverseTransformDirection(moveVelocity).x;
+            float DirY = transform.InverseTransformDirection(moveVelocity).z;
+
+            animator.SetFloat("DirX", DirX);
+            animator.SetFloat("DirY", DirY);
+        }
+        else
+        {
+            animator.SetFloat("DirX", 0f);
+            animator.SetFloat("DirY", 0f);
         }
 
         if (distance <= attackRange && Time.time >= nextAttackTime)
         {
+            animator.SetTrigger("Attack");
+
             Health playerHealth = player.GetComponent<Health>();
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage(damage);
                 Debug.Log($"[ENEMY ATTACK] {gameObject.name} atacó al Player causando {damage} de daño. Vida del Player: {playerHealth.currentHealth}");
             }
+
             nextAttackTime = Time.time + 1f / attackRate;
         }
     }

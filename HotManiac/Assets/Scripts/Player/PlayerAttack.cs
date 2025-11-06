@@ -8,6 +8,13 @@ public class PlayerAttack : MonoBehaviour
     public float attackRadius = 2f;
     public LayerMask enemyLayer;
 
+    private Animator animator;
+
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+    }
+
     private void Update()
     {
         if (Mouse.current.leftButton.wasPressedThisFrame || Input.GetMouseButtonDown(0))
@@ -18,6 +25,12 @@ public class PlayerAttack : MonoBehaviour
 
     private void Attack()
     {
+        // reproducir animación
+        if (animator != null)
+        {
+            animator.SetTrigger("Attack"); 
+        }
+
         Collider[] hitEnemies = Physics.OverlapSphere(transform.position, attackRadius, enemyLayer);
 
         foreach (Collider enemy in hitEnemies)
