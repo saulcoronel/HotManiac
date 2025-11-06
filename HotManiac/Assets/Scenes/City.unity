@@ -77098,7 +77098,7 @@ MonoBehaviour:
   playerControl: {fileID: 2013591006}
   playerCam: {fileID: 900856495}
   cinematicCam: {fileID: 56793351}
-  mainMusic: {fileID: 0}
+  mainMusic: {fileID: 723651258}
 --- !u!136 &1977418652
 CapsuleCollider:
   m_ObjectHideFlags: 0
